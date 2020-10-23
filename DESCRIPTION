@@ -1,0 +1,11 @@
+Package: lazykitten
+Type: Package
+Title: LazyKitten
+Version: 0.1.0
+Author: Davide Vitiello
+Maintainer: <dummu@mail.com>
+Description: A compilation of useful shortcuts
+License: GNU GPLv3 
+Encoding: UTF-8
+LazyData: true
+
