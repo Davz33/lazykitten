@@ -5,6 +5,9 @@ g = function(...) {
   class(List) = 'lbunch'
   return(List)
 }
+
+'%>%'<-dplyr::'%>%'
+
 # Generic form
 '%<-%' = function(l, r, ...) {
   UseMethod('%<-%')

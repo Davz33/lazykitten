@@ -4,10 +4,12 @@ Title: LazyKitten
 Version: 0.1.0
 Author: Davide Vitiello
 Maintainer: <dummu@mail.com>
-Description: A compilation of useful shortcuts
+Description: A compilation of useful shortcuts.
 License: GNU GPLv3 
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 Imports: 
-    dplyr (== 1.0.7)
+    dplyr (== 1.0.7),
+    purrr (== 0.3.4),
+    tibble (== 3.1.4)

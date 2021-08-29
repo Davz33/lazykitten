@@ -7,12 +7,12 @@
 easin(str, sep = " ")
 }
 \arguments{
-\item{str}{Input string}
+\item{str}{Input character vector}
 
-\item{sep}{Delimiter to be used to subset the string into chunks}
+\item{sep}{Delimiter to be used to subset \link{str} into chunks}
 }
 \value{
-A vector of strings
+A vector of characters
 }
 \description{
 Create a vector of strings from a string based on a delimiter
