@@ -1,41 +1,104 @@
-r <- return
-sl <- dplyr::select
-ast <- dplyr::as_tibble
-
-
-highest_in  <- function(listOrEnv,FUN=starts_with,...){
+highest_in  <- function(listOrEnv, FUN = starts_with, ...) {
+  s<-dplyr::select
   l <- listOrEnv %>% as.list()
-  sizes  <- map(l,function(x) x %>% select(FUN(...)) %>% ncol())
+  sizes  <- map(l, function(x)
+    x %>% s(FUN(...)) %>% ncol())
   sizes %>% as_vector() %>% base::which.max() %>% l[[.]] %>% return()
 }
 
-easin <- function(str,sep=" ") return(strsplit(str, sep, fixed = TRUE) %>% .[[1]])
-ppend <- function(df,list,name=NULL){if(is.null(name))out <-c(list,list(df))else {out<-"[[<-"(list,name,df)}; out}
+#' Decompose a string into a vector
+#'
+#' @description Create a vector of strings from a string based on a delimiter
+#'
+#' @param str Input string
+#' @param sep Delimiter to be used to subset the string into chunks
+#'
+#' @return A vector of strings
+#' @export
+#'
+#' @examples fruits <- easin("apple berry banana pear")
+easin <-
+  function(str, sep = " ") {
+    return(strsplit(str, sep, fixed = TRUE) %>% .[[1]])
+  }
+
+
 
 #dataframes
-#merges dfs' rows (of different sizes as well) from a list into a new list whereby every element is a row
-dilute <- function(dfs_list) Reduce(function(x,y)c(x,y),dfs_list)
+#
 
-# Grouping the left hand side, needed for multiple assignment operator within this library
-g = function(...) {
-  List = as.list(substitute(list(...)))[-1L]
-  class(List) = 'lbunch'
-  return(List)
+
+#' Explode dataframe to list of lists
+#' @description merges dataframes columns/rows from a list into a new list whereby every element is a list containing the column/row elements for each of the dataframes. All of the dataframes are be ultimately merged together in the same list.
+#' @param ... list of dataframes to merge together
+#' @param row if TRUE, the output list will consist of the rows of the original dataframes as sublist-elements, otherwise the original dataframes columns (default: FALSE)
+#'
+#' @return a list containing row/column of all the dataframes in \code{...} as sublists
+#' @export
+#'
+#' @examples dilute(mtcars,iris)
+#' dilute(mtcars,iris,row=T)
+dilute <- function(..., row = F) {
+  dfs_list <- list(...)
+  if (sum(mapply(
+    function(df)
+      typeof(df) == "list" &
+    "data.frame" %in% class(df),
+    dfs_list
+  )) != length(dfs_list))
+    stop("All inputs elements must be data frames")
+  asdt <- function(x)
+    as.data.frame(t(x))
+  if (row) {
+    Reduce(function(x, y)
+      c(asdt(x), asdt(y)), dfs_list)
+  } else{
+    return(Reduce(function(x, y)
+      c(x, y), dfs_list))
+  }
 }
-ztartW<-function(char_vect,strings_list){
-  matrix <- sapply(strings_list,function(prefix)startsWith(char_vect,prefix))
-  char_vect[apply(matrix,1,any)]
+
+
+
+ztartW <- function(char_vect, strings_list) {
+  matrix <-
+    sapply(strings_list, function(prefix)
+      startsWith(char_vect, prefix))
+  char_vect[apply(matrix, 1, any)]
 }
-#fuses two lists by names
-#naming must be a character vector of length 2
-lfus = function(list1,list2,naming){
-  if(!(names(list1)%=%names(list2))) stop("lists names must be the same")
-  if(!identical(unique(names(list1)),names(list1))) stop("duplicate names are not allowed")
+
+
+#' List fusion by name
+#' @description #fuses two lists by names, creating a new list where each sub-list contain the elements
+#' of the original lists in the same ordered and labels as per \code{labeling}.
+#' @param list1 list to be fused by name
+#' @param list2 list to be fused by name
+#' @param labeling must be a character vector of length 2
+#' @param follow specify which order should the resulting list have. If \code{list2}, the order will be the same of the second input list (default: \code{list1})
+#'
+#' @return a list containing all the elements of \code{list1} and \code{list2}
+#' @export
+#'
+#' @examples la<-list(type="sunflower",available=F,quantity=1)
+#' lb<-list(available=T,type="rosemary",quantity=3)
+#' lfus(la,lb,c("A","B"))
+lfus = function(list1, list2, labeling, follow=list1) {
+  if (!(names(list1) %=% names(list2)))
+    stop("lists names must be identical or lists must be unnamed, use unname() or assign common names to both list ( will be override by the naming arg)")
+  if (!identical(unique(names(list1)), names(list1)))
+    stop("duplicate names are not allowed")
   out <- list()
-  for(nm in names(list1)) {
-    el <- list();el[[naming[1]]]<- list1[[nm]];el[[naming[2]]]<-list2[[nm]]
-    if(is.table(list1[[nm]])|is.table(list2[[nm]]))out[[nm]] <- list(el)
-    else out[[nm]] <- el
+  if(is.null(names(list1))){nnames=seq(1,length(list1),1);"names<-"(list1,nnames);"names<-"(list2,nnames)}
+  for (nm in names(follow)) {
+    el <-
+      list()
+    el[[labeling[1]]] <- list1[[nm]]
+    el[[labeling[2]]] <- list2[[nm]]
+    if (is.table(list1[[nm]]) |
+        is.table(list2[[nm]]))
+      out[[nm]] <- list(el)
+    else
+      out[[nm]] <- el
   }
   return(out)
 }
